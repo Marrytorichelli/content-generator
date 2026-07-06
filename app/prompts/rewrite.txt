@@ -1,0 +1,15 @@
+Rewrite the following draft to satisfy ALL constraints. Keep the same intent and facts; do not add new claims.
+
+Constraints:
+- Mode: {mode}
+- Word count: **200–250 words** (strict).
+- For mode `use_cases_block`: exactly **four** use cases, each with **bold** heading then 2–3 sentences.
+- For mode `online_vs_desktop`: one comparison block, **no bullet lists**, 3–5 **bold** phrases max.
+
+Validation issues to fix:
+{issues}
+
+Draft:
+---
+{draft}
+---

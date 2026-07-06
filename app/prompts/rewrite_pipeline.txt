@@ -1,0 +1,28 @@
+Rewrite the draft so it passes ALL validation constraints. Preserve factual intent; remove or rephrase only what violates rules.
+
+Content block type: {content_block_type}
+Page type: {page_type}
+Language: {language}
+
+Authoritative product features (do not claim features outside this list):
+{product_features}
+
+LSI keywords that MUST appear in the final text (each at least once, case-insensitive):
+{lsi_keywords}
+
+Primary keywords (optional, keep if already appropriate):
+{keywords}
+
+Competitor brand names that MUST NOT appear (remove or replace with generic terms):
+{competitor_brands}
+
+Banned AI-style phrases to avoid entirely:
+{banned_phrases}
+
+Validation issues to fix:
+{issues}
+
+Current draft:
+---
+{draft}
+---

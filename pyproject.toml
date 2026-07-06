@@ -1,0 +1,49 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["app*"]
+
+[tool.setuptools.package-data]
+app = ["prompts/*.txt", "web/*.html", "web/*.css", "web/*.js"]
+
+[project]
+name = "seo-rag-backend"
+version = "0.1.0"
+description = "SEO content generation pipeline for a digital media platform with RAG (Qwen/Ollama + Qdrant)."
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = [
+    "fastapi>=0.115.0",
+    "uvicorn[standard]>=0.32.0",
+    "pydantic>=2.9.0",
+    "pydantic-settings>=2.6.0",
+    "langchain-core>=0.3.0",
+    "langchain>=0.3.0",
+    "langchain-community>=0.3.0",
+    "langchain-text-splitters>=0.3.0",
+    # Keep compatible with the Qdrant server used in docker-compose.
+    # LangChain's `langchain-community` Qdrant vectorstore expects the classic client methods (e.g. `.search`).
+    "qdrant-client>=1.11,<1.13",
+    "httpx>=0.27.0",
+    "python-json-logger>=2.0.7",
+    "tenacity>=8.2.0",
+    "trafilatura>=1.6.0",
+    "playwright>=1.40.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+    "pytest-asyncio>=0.24.0",
+    "ruff>=0.8.0",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py39"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP"]

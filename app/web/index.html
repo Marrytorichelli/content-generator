@@ -1,0 +1,408 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>SEO RAG Studio — content generator for a digital media platform</title>
+  <style>
+    :root{
+      --bg:#0f1115;--panel:#161922;--panel2:#1d2230;--ink:#e7ebf3;--muted:#9aa3b2;
+      --accent:#5aa9ff;--accent2:#7cf3b7;--warn:#ff9f5a;--err:#ff6b6b;--ok:#7cf3b7;
+      --border:#2a2f3e;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+      background:var(--bg);color:var(--ink);line-height:1.45}
+    header{padding:18px 22px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+    header h1{font-size:16px;margin:0;font-weight:600;letter-spacing:.2px}
+    header .status{font-size:12px;color:var(--muted)}
+    main{display:grid;grid-template-columns:380px 1fr;gap:0;min-height:calc(100vh - 58px)}
+    .col{padding:18px 22px;overflow:auto}
+    .col.left{border-right:1px solid var(--border);background:var(--panel)}
+    section{background:var(--panel2);border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:14px}
+    section h2{font-size:13px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin:0 0 10px}
+    label{display:block;font-size:12px;color:var(--muted);margin:10px 0 4px}
+    input,select,textarea,button{font:inherit;color:var(--ink);background:#0b0e14;border:1px solid var(--border);
+      border-radius:8px;padding:8px 10px;width:100%}
+    textarea{min-height:72px;resize:vertical}
+    .row{display:flex;gap:10px}
+    .row > *{flex:1}
+    button{cursor:pointer;background:linear-gradient(180deg,#243049,#1a2235);border:1px solid #2d4470}
+    button.primary{background:linear-gradient(180deg,#2f6bff,#1c4bd8);border-color:#2a57d0}
+    button.ghost{background:transparent}
+    button[disabled]{opacity:.5;cursor:not-allowed}
+    .pill{display:inline-block;font-size:11px;padding:2px 8px;border-radius:99px;border:1px solid var(--border);color:var(--muted);margin-right:6px}
+    .pill.ok{color:var(--ok);border-color:#2e5f46}
+    .pill.err{color:var(--err);border-color:#5f2e2e}
+    .pill.warn{color:var(--warn);border-color:#5f472e}
+    pre{background:#0b0e14;border:1px solid var(--border);border-radius:8px;padding:12px;white-space:pre-wrap;
+      word-break:break-word;font-size:13px;color:#d6dae4}
+    .muted{color:var(--muted);font-size:12px}
+    .spread{display:flex;justify-content:space-between;align-items:center}
+    .grow{flex:1}
+    .badge{display:inline-block;padding:3px 8px;font-size:11px;border:1px solid var(--border);
+      border-radius:6px;color:var(--muted);margin-right:6px;background:#10141d}
+    details > summary{cursor:pointer;color:var(--accent);font-size:12px;margin-top:8px}
+    .sources-list{display:flex;flex-direction:column;gap:8px}
+    .src{border:1px solid var(--border);border-radius:8px;padding:8px 10px;background:#10141d}
+    .src .head{font-size:12px;color:var(--muted);margin-bottom:4px}
+    .src .body{font-size:13px;color:#cbd2df}
+    .tag{font-size:11px;padding:2px 6px;border-radius:6px;background:#0b0e14;border:1px solid var(--border);margin-right:4px;color:var(--muted)}
+    .flex-wrap{display:flex;flex-wrap:wrap;gap:6px}
+    .topbar{display:flex;gap:8px;margin-bottom:10px}
+    .footer{padding:12px 22px;border-top:1px solid var(--border);color:var(--muted);font-size:12px}
+    .hint{font-size:11px;color:var(--muted);margin-top:4px}
+  </style>
+</head>
+<body>
+  <header>
+    <h1>SEO RAG Studio <span class="badge">portfolio demo</span></h1>
+    <div class="status">
+      <span id="pillOllama" class="pill">ollama: checking…</span>
+      <span id="pillQdrant" class="pill">qdrant: checking…</span>
+    </div>
+  </header>
+
+  <main>
+    <div class="col left">
+      <section>
+        <h2>1. Refresh knowledge</h2>
+        <label>Base URL to crawl</label>
+        <input id="crawlUrl" placeholder="https://your-site.example/" value="" />
+        <div class="row" style="margin-top:8px">
+          <div>
+            <label>Source type</label>
+            <select id="crawlSourceType">
+              <option value="platform">platform</option>
+              <option value="competitor">competitor</option>
+            </select>
+          </div>
+          <div>
+            <label>Language</label>
+            <input id="crawlLang" value="en" />
+          </div>
+        </div>
+        <div class="row" style="margin-top:8px">
+          <div>
+            <label>Max pages</label>
+            <input id="crawlMaxPages" type="number" min="1" max="500" value="30" />
+          </div>
+          <div>
+            <label>Max depth</label>
+            <input id="crawlDepth" type="number" min="0" max="5" value="1" />
+          </div>
+        </div>
+        <div class="row" style="margin-top:10px">
+          <button class="primary" id="btnCrawl">Crawl &amp; index</button>
+          <button class="ghost" id="btnPresetPlatform">Preset: platform source</button>
+        </div>
+        <div class="hint">Runs Playwright → Trafilatura → chunk → Qdrant. Use the preset to set platform defaults, then enter a base URL and crawl.</div>
+      </section>
+
+      <section>
+        <h2>2. Generation input</h2>
+        <label>Page type</label>
+        <input id="pageType" placeholder="landing" value="landing" />
+        <label>Block type</label>
+        <select id="blockType">
+          <option value="use_cases_block">use_cases_block</option>
+          <option value="online_vs_desktop" selected>online_vs_desktop</option>
+        </select>
+        <label>Prompt variant</label>
+        <select id="promptVariant"><option value="">v1 (default)</option></select>
+        <label>Feature description</label>
+        <textarea id="featureDescription">Desktop video editor — offline tool for trimming and joining clips, adding titles, effects, and exporting in full quality without cloud upload.</textarea>
+        <label>Product features (one per line — authoritative feature list)</label>
+        <textarea id="productFeatures">video trimming
+video merging and joining
+timeline with multiple tracks
+titles and captions
+video effects and filters
+audio editing and fade in/out
+chroma key
+video stabilization
+export in multiple formats
+export presets for YouTube, TikTok, Facebook</textarea>
+        <label>LSI keywords (one per line — required)</label>
+        <textarea id="lsi">offline video editor
+desktop video editor
+no internet needed
+local video editing
+full quality export
+large file support
+privacy-friendly editing
+timeline editing
+video format support</textarea>
+        <label>Keywords (one per line — optional)</label>
+        <textarea id="keywords">video editor
+free trial video editor
+windows video editor</textarea>
+        <div class="row" style="margin-top:8px">
+          <div>
+            <label>Language</label>
+            <input id="language" value="en" />
+          </div>
+          <div>
+            <label>Audience</label>
+            <input id="audience" value="users comparing offline and online editors" />
+          </div>
+        </div>
+
+        <h2 style="margin-top:14px">3. Retrieval scope</h2>
+        <div class="row">
+          <div>
+            <label>source_type</label>
+            <select id="scopeSourceType">
+              <option value="">(any)</option>
+              <option value="platform" selected>platform</option>
+              <option value="competitor">competitor</option>
+            </select>
+          </div>
+          <div>
+            <label>domain</label>
+            <input id="scopeDomain" placeholder="www.example.com" />
+          </div>
+        </div>
+        <div class="row" style="margin-top:8px">
+          <div>
+            <label>language</label>
+            <input id="scopeLang" value="en" />
+          </div>
+          <div>
+            <label>top_k</label>
+            <input id="topK" type="number" min="1" max="32" value="6" />
+          </div>
+        </div>
+        <label style="margin-top:8px">Competitor brand names to block (comma separated)</label>
+        <input id="competitorBrands" placeholder="" />
+        <label style="margin-top:8px"><input type="checkbox" id="useRag" checked style="width:auto;margin-right:6px" />Use RAG retrieval</label>
+        <div style="margin-top:12px" class="row">
+          <button class="primary" id="btnGenerate">Generate</button>
+          <button class="ghost" id="btnPreview">Preview retrieval only</button>
+        </div>
+      </section>
+    </div>
+
+    <div class="col right">
+      <section>
+        <div class="spread">
+          <h2 style="margin:0">Result</h2>
+          <div>
+            <span id="wordCount" class="pill">words: —</span>
+            <span id="validityPill" class="pill">validation: —</span>
+            <span id="rewritesPill" class="pill">rewrites: —</span>
+          </div>
+        </div>
+        <pre id="output" style="margin-top:10px;min-height:260px">Fill inputs on the left and hit Generate.</pre>
+        <details>
+          <summary>Validation report</summary>
+          <pre id="validationReport" style="margin-top:8px">(no report yet)</pre>
+        </details>
+      </section>
+
+      <section>
+        <h2>Retrieved evidence preview</h2>
+        <div id="sourcesList" class="sources-list muted">(no retrieval yet)</div>
+      </section>
+
+      <section>
+        <h2>Activity log</h2>
+        <pre id="log" style="max-height:180px;overflow:auto"></pre>
+      </section>
+    </div>
+  </main>
+  <div class="footer">
+    POST /generation/content · POST /ingestion/crawl · POST /retrieval/query · GET /readyz
+  </div>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+    const log = (msg) => {
+      const el = $("log");
+      const t = new Date().toISOString().split("T")[1].slice(0,8);
+      el.textContent += `[${t}] ${msg}\n`;
+      el.scrollTop = el.scrollHeight;
+    };
+
+    const splitLines = (v) => (v || "").split("\n").map(s => s.trim()).filter(Boolean);
+    const splitCsv = (v) => (v || "").split(",").map(s => s.trim()).filter(Boolean);
+
+    async function api(path, opts = {}) {
+      const base = window.location.origin;
+      const res = await fetch(base + path, {
+        headers: { "Content-Type": "application/json" },
+        ...opts,
+      });
+      const text = await res.text();
+      let body;
+      try { body = text ? JSON.parse(text) : {}; } catch { body = { raw: text }; }
+      if (!res.ok) throw new Error(`${res.status} ${res.statusText}: ${JSON.stringify(body).slice(0,500)}`);
+      return body;
+    }
+
+    async function refreshHealth() {
+      try {
+        const r = await api("/readyz");
+        const o = r.checks && r.checks.ollama;
+        const q = r.checks && r.checks.qdrant;
+        $("pillOllama").className = "pill " + (o ? "ok" : "err");
+        $("pillOllama").textContent = "ollama: " + (o ? "ok" : "unreachable");
+        $("pillQdrant").className = "pill " + (q ? "ok" : "err");
+        $("pillQdrant").textContent = "qdrant: " + (q ? "ok" : "unreachable");
+      } catch (e) {
+        $("pillOllama").textContent = "ollama: err";
+        $("pillQdrant").textContent = "qdrant: err";
+      }
+    }
+
+    async function loadVariants() {
+      const block = $("blockType").value;
+      try {
+        const r = await api(`/generation/prompts/${block}/variants`);
+        const sel = $("promptVariant");
+        sel.innerHTML = "";
+        (r.variants || ["v1"]).forEach(v => {
+          const opt = document.createElement("option");
+          opt.value = (v === "v1") ? "" : v;
+          opt.textContent = (v === "v1") ? "v1 (default)" : v;
+          sel.appendChild(opt);
+        });
+      } catch (e) {
+        log("could not load variants: " + e.message);
+      }
+    }
+
+    function buildScope() {
+      const s = {};
+      const t = $("scopeSourceType").value.trim();
+      const d = $("scopeDomain").value.trim();
+      const l = $("scopeLang").value.trim();
+      if (t) s.source_type = t;
+      if (d) s.domain = d;
+      if (l) s.language = l;
+      return Object.keys(s).length ? s : null;
+    }
+
+    async function generate() {
+      const body = {
+        page_type: $("pageType").value.trim() || "landing",
+        content_block_type: $("blockType").value,
+        feature_description: $("featureDescription").value.trim(),
+        product_features: splitLines($("productFeatures").value),
+        lsi_keywords: splitLines($("lsi").value),
+        keywords: splitLines($("keywords").value),
+        language: $("language").value.trim() || "en",
+        audience: $("audience").value.trim(),
+        source_scope: buildScope() || {},
+        competitor_brands: splitCsv($("competitorBrands").value),
+        use_rag: $("useRag").checked,
+        top_k: parseInt($("topK").value, 10) || 6,
+        prompt_variant: $("promptVariant").value || null,
+      };
+      if (!body.feature_description) { alert("feature_description is required"); return; }
+      if (!body.product_features.length) { alert("product_features is required"); return; }
+      if (!body.lsi_keywords.length) { alert("lsi_keywords is required"); return; }
+
+      $("output").textContent = "Generating…";
+      $("wordCount").textContent = "words: …";
+      $("validityPill").textContent = "validation: …";
+      $("rewritesPill").textContent = "rewrites: …";
+      log("POST /generation/content block=" + body.content_block_type + " variant=" + (body.prompt_variant || "v1"));
+      try {
+        const r = await api("/generation/content", {
+          method: "POST",
+          body: JSON.stringify(body),
+        });
+        $("output").textContent = r.final_text || "(empty)";
+        $("wordCount").className = "pill";
+        $("wordCount").textContent = "words: " + (r.validation_report?.word_count ?? "?");
+        $("validityPill").className = "pill " + (r.validation_report?.passed ? "ok" : "warn");
+        $("validityPill").textContent = "validation: " + (r.validation_report?.passed ? "passed" : "issues");
+        $("rewritesPill").textContent = "rewrites: " + r.rewrite_attempts;
+        $("validationReport").textContent = JSON.stringify(r.validation_report, null, 2);
+        renderSources(r.retrieved_sources_summary || []);
+        log("ok: " + (r.validation_report?.word_count ?? "?") + " words, " + r.rewrite_attempts + " rewrites");
+      } catch (e) {
+        $("output").textContent = "Error: " + e.message;
+        log("error: " + e.message);
+      }
+    }
+
+    async function previewRetrieval() {
+      const body = {
+        query: [$("featureDescription").value.trim(), ...splitLines($("lsi").value), ...splitLines($("keywords").value)].join("\n"),
+        source_scope: buildScope(),
+        top_k: parseInt($("topK").value, 10) || 6,
+      };
+      log("POST /retrieval/query");
+      try {
+        const r = await api("/retrieval/query", {
+          method: "POST",
+          body: JSON.stringify(body),
+        });
+        renderSources((r.sources || []).map(s => ({
+          text_preview: s.text.slice(0, 320),
+          score: s.score,
+          url: s.metadata?.url, title: s.metadata?.title,
+          source_type: s.metadata?.source_type, domain: s.metadata?.domain,
+          language: s.metadata?.language,
+        })));
+      } catch (e) { log("error: " + e.message); }
+    }
+
+    function renderSources(list) {
+      const box = $("sourcesList");
+      if (!list.length) { box.textContent = "(no sources)"; return; }
+      box.innerHTML = "";
+      list.forEach(s => {
+        const div = document.createElement("div");
+        div.className = "src";
+        const tags = [s.source_type, s.domain, s.language].filter(Boolean)
+          .map(t => `<span class="tag">${t}</span>`).join("");
+        const link = s.url ? `<a href="${s.url}" target="_blank" style="color:var(--accent)">${s.title || s.url}</a>`
+                           : (s.title || "(untitled)");
+        const score = (s.score != null) ? ` · score ${Number(s.score).toFixed(3)}` : "";
+        div.innerHTML = `<div class="head">${tags} ${link} ${score}</div>
+                         <div class="body">${(s.text_preview || "").replace(/</g,"&lt;")}</div>`;
+        box.appendChild(div);
+      });
+    }
+
+    async function triggerCrawl(opts) {
+      const body = {
+        source_type: opts?.source_type || $("crawlSourceType").value,
+        base_url: opts?.base_url || $("crawlUrl").value.trim(),
+        language: opts?.language || $("crawlLang").value.trim() || "en",
+        max_pages: parseInt($("crawlMaxPages").value, 10) || 30,
+        max_depth: parseInt($("crawlDepth").value, 10),
+      };
+      if (!body.base_url) { alert("base_url is required"); return; }
+      log("POST /ingestion/crawl " + body.base_url);
+      $("btnCrawl").disabled = true;
+      try {
+        const r = await api("/ingestion/crawl", { method: "POST", body: JSON.stringify(body) });
+        log(`crawl ok: ${r.chunks_upserted} chunks from ${r.pages_processed} pages, errors=${(r.errors||[]).length}`);
+      } catch (e) { log("crawl error: " + e.message); }
+      finally { $("btnCrawl").disabled = false; }
+    }
+
+    $("btnGenerate").addEventListener("click", generate);
+    $("btnPreview").addEventListener("click", previewRetrieval);
+    $("btnCrawl").addEventListener("click", () => triggerCrawl());
+    $("btnPresetPlatform").addEventListener("click", () => {
+      $("crawlSourceType").value = "platform";
+      $("crawlLang").value = "en";
+      $("crawlUrl").value = "";
+      $("scopeSourceType").value = "platform";
+      $("scopeDomain").value = "";
+      $("crawlUrl").focus();
+      log("Preset applied: platform source, en — enter a base URL and click Crawl & index.");
+    });
+    $("blockType").addEventListener("change", loadVariants);
+
+    refreshHealth();
+    loadVariants();
+    setInterval(refreshHealth, 30000);
+  </script>
+</body>
+</html>

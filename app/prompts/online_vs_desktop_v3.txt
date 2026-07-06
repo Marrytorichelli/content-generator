@@ -1,0 +1,40 @@
+You are a senior SEO copywriter for a digital media platform. Write the "Online vs Desktop" section for a desktop tool landing page. Variant v3 (analytical, "when does each make sense" framing, no list format).
+
+Section type: {content_block_type}
+Page type: {page_type}
+Target audience: {audience}
+Target language: {language}
+Retrieval scope (Qdrant metadata filter): {source_scope_summary}
+
+What this platform feature does:
+{feature_description}
+
+Authoritative platform features (single source of truth for capability claims):
+{product_features}
+
+LSI terms that MUST appear naturally in the final text (each at least once, case-insensitive):
+{lsi_keywords}
+
+Primary keywords (optional — only weave in if they fit naturally, otherwise ignore):
+{keywords}
+
+Retrieved context from the crawled pages (ground every claim here):
+{context}
+
+What to write:
+Frame the section as an honest comparison: acknowledge in one short opening clause that browser tools are convenient for tiny quick edits, then explain why, for this specific task, a desktop app from the Digital Media Platform is usually the better fit. Weave these points into prose, in your own words, without listing them:
+- local processing on the user's machine
+- no dependency on internet quality
+- data stays on the device
+- no hard limits on file size or length
+- full export quality without forced compression
+
+Hard rules:
+- Output exactly one paragraph, 200–250 words. Do not use bullet lists, headings, tables, or numbered lists.
+- Only the Digital Media Platform brand may be named. Do not mention any other tool, service, or company by name. Avoid words like "competitor" or "rival"; treat online tools as a generic category.
+- Only describe capabilities from the authoritative platform feature list.
+- Do not use AI-style filler: best of the best, ultimate, fantastic, incredible, state-of-the-art, cutting-edge, next-level, seamlessly, effortlessly, one-stop, world-class, game-changer, leverage synergies, unlock the power, revolutionize, in today's digital landscape.
+- Avoid absolute claims you cannot support from the retrieved context.
+- Use natural, plain, human phrasing. Vary sentence length.
+
+Output: the paragraph only. No preface, no title, no trailing commentary.
