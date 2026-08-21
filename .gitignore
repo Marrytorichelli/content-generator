@@ -10,5 +10,3 @@ dist/
 build/
 .cursor/
 .DS_Store
-.dockerignore
-.gitignore
